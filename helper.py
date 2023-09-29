@@ -5,7 +5,11 @@ import json
 import signal
 import time
 import sys
-import readline
+# OS判別（Windowsに対応）
+if os.name == 'posix':  # UNIX系の場合
+    import readline
+elif os.name == 'nt':  # Windowsの場合
+    import pyreadline as readline
 
 import subprocess
 import pkg_resources
