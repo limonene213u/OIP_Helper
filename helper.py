@@ -5,6 +5,7 @@ import json
 import signal
 import time
 import sys
+import readline
 
 import subprocess
 import pkg_resources
@@ -122,15 +123,25 @@ def main():
         choice = int(input("選択してください："))
 
         if choice == 1:
-            messages = interpreter.chat()
+            readline.parse_and_bind("tab: complete")
+            while True:
+                user_input = input("あなた：")
+                if user_input == 'quit':
+                    break
+                messages = interpreter.chat(user_input)
         elif choice == 2:
             previous_messages = load_chatlog()
             if previous_messages:
                 interpreter.load(previous_messages)
-                messages = interpreter.chat()
             else:
                 print("以前の会話はありません。")
-                messages = interpreter.chat()
+
+            readline.parse_and_bind("tab: complete")
+            while True:
+                user_input = input("あなた：")
+                if user_input == 'quit':
+                    break
+                messages = interpreter.chat(user_input)
         elif choice == 3:
             current_message = interpreter.system_message
             print(f"現在のシステムメッセージ：\n{current_message}")
