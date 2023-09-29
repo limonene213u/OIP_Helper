@@ -53,12 +53,20 @@ def save_chatlog(messages):
     with open("chatlog.json", "w") as f:
         json.dump(messages, f)
 
+
 def load_chatlog():
     try:
         with open("chatlog.json", "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
+
+def load_last_message():
+    chatlog = load_chatlog()
+    if chatlog:
+        return [chatlog[-1]]  # 最後のメッセージだけをリストとして返す
+    return []
+
 
 def select_api_key(api_keys):
     while True:
@@ -104,11 +112,6 @@ def main():
     else:
         selected_key = api_keys[0]
 
-    # 以前の会話のロード
-    previous_messages = load_chatlog()
-    if previous_messages:
-        interpreter.load(previous_messages)
-
     def signal_handler(sig, frame):
         print("\nプログラムが中断されました。会話を保存します。")
         save_chatlog(messages)
@@ -134,9 +137,9 @@ def main():
                     break
                 messages = interpreter.chat(user_input)
         elif choice == 2:
-            previous_messages = load_chatlog()
-            if previous_messages:
-                interpreter.load(previous_messages)
+            last_messages = load_chatlog()
+            if last_messages:
+                interpreter.load(messages)
             else:
                 print("以前の会話はありません。")
 
