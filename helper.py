@@ -61,8 +61,30 @@ def load_chatlog():
     except FileNotFoundError:
         return []
 
+def read_messages_json():
+    """
+    Read messages history from temp directory
+    :return: list of messages
+    """
+    messages_file_path = "messages.json"
+    if os.path.exists(messages_file_path):
+        with open(messages_file_path, "r") as f:
+            messages = json.load(f)
+    else:
+        messages = []
+    return messages
+
+def save_messages_json(messages):
+    """
+    Save messages history to temp directory
+    :param messages: list of messages
+    """
+    messages_json = json.dumps(messages, indent=4, ensure_ascii=False)
+    with open("messages.json", "w", encoding="utf-8") as f:
+        f.write(messages_json)
+
 def load_last_message():
-    chatlog = load_chatlog()
+    chatlog = read_messages_json()
     if chatlog:
         return [chatlog[-1]]  # 最後のメッセージだけをリストとして返す
     return []
@@ -102,7 +124,7 @@ def select_api_key(api_keys):
             break
 
 def main():
-    messages = []
+    chat_messages = []
     global selected_key
 
     # APIキーのロードと選択
@@ -114,7 +136,7 @@ def main():
 
     def signal_handler(sig, frame):
         print("\nプログラムが中断されました。会話を保存します。")
-        save_chatlog(messages)
+        save_chatlog(chat_messages)
         sys.exit(0)
 
     # signalモジュールを使用して、Ctrl+Cが押されたときにsignal_handler関数を呼び出すように設定
@@ -134,30 +156,37 @@ def main():
             while True:
                 user_input = input("User：")
                 if user_input == ':!q':
+                    messages = interpreter.chat('%save_message')  # 対話内容を保存
                     break
                 messages = interpreter.chat(user_input)
+
         elif choice == 2:
-            last_messages = load_chatlog()
+            last_messages = load_last_message()
             if last_messages:
+                messages = interpreter.chat("My name is limonene.", return_messages=True)
+                interpreter.reset()
                 interpreter.load(messages)
+                while True:
+                    user_input = input("User：")
+                    if user_input == ':!q':
+                        save_messages_json(messages)  # 対話内容を保存
+                        break
+                    messages = interpreter.chat(user_input)
             else:
                 print("以前の会話はありません。")
+                break
 
-            readline.parse_and_bind("tab: complete")
-            while True:
-                user_input = input("User：")
-                if user_input == ':!q':
-                    break
-                messages = interpreter.chat(user_input)
         elif choice == 3:
             current_message = interpreter.system_message
             print(f"現在のシステムメッセージ：\n{current_message}")
             new_message = input("新しいシステムメッセージを追加してください：")
             interpreter.system_message += new_message
             save_system_message(new_message)
+
         elif choice == 4:
             print("必要に応じて各自で実装してください。")
             time.sleep(3)
+
         elif choice == 5:
             break
 
