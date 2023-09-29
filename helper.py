@@ -24,6 +24,13 @@ for package in required_packages:
 
 selected_key = None
 
+def select_api_key(api_keys):
+    print("複数のAPIキーが見つかりました。使用するキーを選択してください：")
+    for i, key in enumerate(api_keys, 1):
+        print(f"{i}. {key}")
+    selected_index = int(input("番号を入力してください：")) - 1
+    return api_keys[selected_index]
+
 def load_api_keys():
     load_dotenv()
     api_keys = os.getenv("OPENAI_API_KEYS")
