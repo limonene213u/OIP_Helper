@@ -4,10 +4,12 @@ import interpreter
 import json
 import signal
 import time
+import sys
+
 import subprocess
 import pkg_resources
 
-required_packages = ["python-dotenv", "interpreter"]
+required_packages = ["python-dotenv", "open-interpreter"]
 
 installed_packages = {pkg.key for pkg in pkg_resources.working_set}
 
@@ -25,17 +27,11 @@ def load_api_keys():
         new_key = input("OpenAI APIキーが見つかりませんでした。新しいキーを入力してください：")
         with open(".env", "a") as f:
             f.write(f"\nOPENAI_API_KEYS={new_key}")
+        os.environ["OPENAI_API_KEY"] = new_key
         return [new_key]
     else:
+        os.environ["OPENAI_API_KEY"] = api_keys.split(',')[0]
         return api_keys.split(',')
-
-def signal_handler(sig, frame):
-    save_option = input("\n会話を保存しますか？ (y/n)：")
-    if save_option.lower() == "y":
-        save_chatlog(messages)
-    elif save_option.lower() == "n":
-        save_chatlog([])  # 保存を破棄
-    exit(0)
 
 def load_system_message():
     # .envをロード
@@ -47,8 +43,6 @@ def save_system_message(message):
     # .envにシステムメッセージを保存
     with open('.env', 'a') as f:
         f.write(f"\nINTERPRETER_SYSTEM_MESSAGE={message}")
-
-signal.signal(signal.SIGINT, signal_handler)
     
 def save_chatlog(messages):
     with open("chatlog.json", "w") as f:
@@ -95,8 +89,9 @@ def select_api_key(api_keys):
             break
 
 def main():
+    messages = []
     global selected_key
-    global messages
+
     # APIキーのロードと選択
     api_keys = load_api_keys()
     if len(api_keys) > 1:
@@ -109,6 +104,14 @@ def main():
     if previous_messages:
         interpreter.load(previous_messages)
 
+    def signal_handler(sig, frame):
+        print("\nプログラムが中断されました。会話を保存します。")
+        save_chatlog(messages)
+        sys.exit(0)
+
+    # signalモジュールを使用して、Ctrl+Cが押されたときにsignal_handler関数を呼び出すように設定
+    signal.signal(signal.SIGINT, signal_handler)
+
     while True:
         print("\n--- メニュー ---")
         print("1. 新しい会話をはじめる")
@@ -119,14 +122,15 @@ def main():
         choice = int(input("選択してください："))
 
         if choice == 1:
-            messages = interpreter.chat(return_messages=True)
+            messages = interpreter.chat()
         elif choice == 2:
             previous_messages = load_chatlog()
             if previous_messages:
                 interpreter.load(previous_messages)
-                messages = interpreter.chat(return_messages=True)
+                messages = interpreter.chat()
             else:
                 print("以前の会話はありません。")
+                messages = interpreter.chat()
         elif choice == 3:
             current_message = interpreter.system_message
             print(f"現在のシステムメッセージ：\n{current_message}")
