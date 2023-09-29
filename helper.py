@@ -101,19 +101,17 @@ def main():
                 chat_messages.extend(messages)
 
         if choice == 2:
-            print("確認なしにコマンドを実行させるモードです")
-            # コード実行時の確認を省略するためのコマンドを設定
-            interpreter_command = "interpreter --yes"
-            
+            # コード実行時の確認を省略するためのコマンドとその引数を設定
+            interpreter.auto_run = True
             readline.parse_and_bind("tab: complete")
             while True:
                 user_input = input("User：")
                 if user_input == '!wq':
                     save_messages_json(chat_messages)
                     break
-                # interpreter_command を使用してコードを実行
-                messages = subprocess.check_output(interpreter_command, input=user_input, text=True)
+                messages = interpreter.chat(user_input)
                 chat_messages.extend(messages)
+
 
         elif choice == 3:
             print("いま実装中です、「１」の処理を行います")
