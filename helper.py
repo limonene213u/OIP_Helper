@@ -155,10 +155,14 @@ def main():
             readline.parse_and_bind("tab: complete")
             while True:
                 user_input = input("User：")
-                if user_input == ':!q':
+                if user_input == '!wq':
                     messages = interpreter.chat('%save_message')  # 対話内容を保存
+
                     break
                 messages = interpreter.chat(user_input)
+                response = interpreter.chat(user_input)
+                print(response)  # デバッグ用
+
 
         elif choice == 2:
             last_messages = load_last_message()
@@ -168,7 +172,8 @@ def main():
                 interpreter.load(messages)
                 while True:
                     user_input = input("User：")
-                    if user_input == ':!q':
+                    if user_input == '!wq':
+                        print("Saving messages...") 
                         save_messages_json(messages)  # 対話内容を保存
                         break
                     messages = interpreter.chat(user_input)
