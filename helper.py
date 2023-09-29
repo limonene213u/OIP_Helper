@@ -5,7 +5,7 @@ import json
 import signal
 import time
 import sys
-# OS判別（Windowsに対応）
+# OS判別
 if os.name == 'posix':  # UNIX系の場合
     import readline
 elif os.name == 'nt':  # Windowsの場合
@@ -129,8 +129,8 @@ def main():
         if choice == 1:
             readline.parse_and_bind("tab: complete")
             while True:
-                user_input = input("あなた：")
-                if user_input == 'quit':
+                user_input = input("User：")
+                if user_input == ':!q':
                     break
                 messages = interpreter.chat(user_input)
         elif choice == 2:
@@ -142,8 +142,8 @@ def main():
 
             readline.parse_and_bind("tab: complete")
             while True:
-                user_input = input("あなた：")
-                if user_input == 'quit':
+                user_input = input("User：")
+                if user_input == ':!q':
                     break
                 messages = interpreter.chat(user_input)
         elif choice == 3:
